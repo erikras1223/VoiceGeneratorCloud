@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  voiceapp:
+    build:
+      context: ./backend
+    ports:
+      - "8084:8084"
+    environment:
+      - api_key=${api_key}
+
+  nginx:
+    build:
+      context: ./frontend
+    ports:
+      - "8081:8080"
+    depends_on:
+      - voiceapp
+
+
