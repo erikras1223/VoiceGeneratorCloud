@@ -26,13 +26,14 @@ export class AppComponent implements OnInit, AfterViewInit {
   public speechSynthesis: SpeechSynthesis;
   private utterInstances: SpeechSynthesisUtterance;
   public speechCustom: string;
-  public suffix = '';
+  public context = '';
   public listenAfterSpeechSwitch = true;
   public redirectSpeechSwitch = false;
+  public voices: SpeechSynthesisVoice[] = [];
 
   public filler = '';
   public isFemale: boolean = true;
-  public models: string[] = ['124M', '355M', '774M', '1558M']; 
+  public models: string[] = ['124M', '355M', '774M', '1558M'];
 
   private speechUtteranceChunker = null;
   private speechQueue: Queue;
@@ -50,7 +51,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     'Oh rusty buckets, you\'re going to catch a fever out there',
     "Who told you that about me. I am very nice and a kind person"
   ];
-  public configParams: any  = {
+  public configParams: any = {
     model_name: "124M",
     input_text: "",
     length: "60"
@@ -59,9 +60,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     pitch: 1,
     volume: 0.9,
     voice: null,
-    rate: 0.5
+    rate: 1
   }
-  
+
 
   constructor(private cdRef: ChangeDetectorRef,
     private http: HttpClient) {
@@ -84,10 +85,10 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
       else {
         let chunkLength = (settings && settings.chunkLength) || 160;
-        let pattRegex = new RegExp('^[\\s\\S]{' + Math.floor(chunkLength / 2) + ',' + chunkLength + '}[.!?,]{1}|^[\\s\\S]{1,' + chunkLength + '}$|^[\\s\\S]{1,' + chunkLength + '} ');
+        let pattRegex = new RegExp('^[\\s\\S]{' + Math.floor(chunkLength / 2) + ',' + chunkLength + '}[\\.!\\?,]{1}|^[\\s\\S]{1,' + chunkLength + '}$|^[\\s\\S]{1,' + chunkLength + '} ');
         let chunkArr = txt.match(pattRegex);
 
-        if (chunkArr[0] === undefined || chunkArr[0].length <= 2) {
+        if (!txt || chunkArr[0] === undefined || chunkArr[0].length <= 2) {
           //call once all text has been spoken...
           if (callback !== undefined) {
             callback();
@@ -130,6 +131,21 @@ export class AppComponent implements OnInit, AfterViewInit {
     const { webkitSpeechRecognition }: IWindow = window as unknown as IWindow;
     //let vulgarities = ["shit", "fuck", "bitch", "damn", "jesus", "christ", "god", "pussy", "dick", "douche", "bastard", "gay", "nigger", "homo"]
     this.speechSynthesis = (window as any).speechSynthesis;
+
+    this.speechSynthesis.onvoiceschanged = () => {
+      this.voices = window.speechSynthesis.getVoices();
+      if (this.speechSynthesis.getVoices()) {
+        let isGoogle: boolean = !!(this.voices.find((v) => (v.name.toLowerCase().includes('google'))))
+        if (!isGoogle) {
+          let default_voice = this.voices.find((v) => (v.name.toLowerCase().includes('yunjian')))
+          this.configUtterance.voice = default_voice ? default_voice : this.voices[1]
+        } else {
+          this.configUtterance.voice = this.voices[5];
+        }
+      }
+    };
+
+
     this.utterInstances = new SpeechSynthesisUtterance();
     this.listenAfterSpeechSubject.subscribe((event) => {
       console.log('I stopped speaking.. starting listening');
@@ -192,26 +208,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       // Get a transcript of what was said.
       const transcript = event.results[current][0].transcript;
       this.currentLine = transcript;
+
       console.log('This is the transcript: ' + transcript);
       console.log('This is the event result ' + event.results);
 
       const wordList = this.currentLine.split(' ');
-      let scramberList = [];
-      let tempSuffix = this.suffix;
-      for (let i = 0; i < wordList.length; i++) {
-        if (i % 2 === 0) {
-          scramberList.push(wordList[i] + tempSuffix);
-        } else {
-          scramberList.push(wordList[i]);
-        }
-
-      }
-
-      let scrambledStr = scramberList.join(' ');
-
-      // setTimeout(() => {
-      //   this.readOutLoud(scrambledStr, false);
-      // }, 1600 );
 
 
       // Add the current transcript to the contents of our Note.
@@ -225,7 +226,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.cdRef.detectChanges();
       }
       this.configParams.input_text = this.currentLine;
-      this.generateResponse().subscribe(resp => {
+      this.generateTextResponse().subscribe(resp => {
         this.requestSpeech(resp);
         //this.readOutLoud(resp, false);
       });
@@ -241,6 +242,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       console.log(event);
       this.instructions = 'You were quiet for a while so voice recognition turned itself off.';
       this.cdRef.detectChanges();
+
       this.recognition.stop();
       console.log('I stopped listening');
 
@@ -254,6 +256,14 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.recognition.onerror = (event) => {
       if (event.error === 'no-speech') {
         this.instructions = 'No speech was detected. Try again.';
+        this.recognition.stop();
+        if (!this.listenAfterSpeechSwitch) {
+          return;
+
+        }
+        setTimeout(() => {
+          this.recognition.start();
+        }, 500)
       }
     };
 
@@ -262,20 +272,43 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   }
 
+  compareObjects(o1: any, o2: any) {
+    return (o1 && o2 && (o1.name == o2.name))
+  }
+
 
   ngAfterViewInit(): void {
     this.timeLastSpoke = performance.now();
   }
 
-  generateResponse(): Observable<any> {
+  generateTextResponse(): Observable<any> {
     let params = new HttpParams()
     const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
-    for(let key in this.configParams){
+    for (let key in this.configParams) {
       params = params.set(key, this.configParams[key]);
     }
-    return this.http.get("/api/text-generate", {responseType:'text', params: params, headers: headers})
+    return this.http.get("/api/text-generate", { responseType: 'text', params: params, headers: headers })
 
   }
+  deleteContextToConvo(event) {
+    this.http.delete("/api/context").subscribe(() => {
+      console.log("deleted context");
+    })
+  }
+
+  addContextToConvo(event) {
+    let params = { 'role': 'system', 'action': 'replace', 'input_text': this.context }
+    this.postContext(params).subscribe(resp => {
+      console.log(resp.message);
+    })
+
+  }
+
+  postContext(params: any): Observable<any> {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json; charset=utf-8');
+    return this.http.post("/api/context", params, { headers: headers })
+  }
+
 
   startRecord(event: any) {
     console.log('look hello');
@@ -331,17 +364,17 @@ export class AppComponent implements OnInit, AfterViewInit {
   speakFromText(event): void {
     // this.recognition.stop();
     // this.readOutLoud(this.speechCustom, true);
-    if(!this.redirectSpeechSwitch){
+    if (!this.redirectSpeechSwitch) {
       this.speechSynthesis.cancel();
       this.readOutLoud(this.speechCustom, true)
-    }else {
+    } else {
       // allow to send message to the backend to provoke message
       this.configParams.input_text = this.speechCustom;
-      this.generateResponse().subscribe(resp => {
+      this.generateTextResponse().subscribe(resp => {
         this.requestSpeech(resp);
       });
     }
-    
+
   }
 
   readOutLoud(message: string, selfInitiated: boolean): any {
@@ -349,15 +382,17 @@ export class AppComponent implements OnInit, AfterViewInit {
     // tslint:disable-next-line:no-unused-expression
     this.recognition.stop();
 
-  
-    this.configUtterance.voice = !this.configUtterance.voice ? this.isFemale ? this.speechSynthesis.getVoices()[3] : this.speechSynthesis.getVoices()[5] : this.configUtterance.voice;
+
+    //this.configUtterance.voice = !this.configUtterance.voice ? this.isFemale ? this.speechSynthesis.getVoices()[3] : this.speechSynthesis.getVoices()[5] : this.configUtterance.voice;
+    console.log("this is the voice avaliabe", this.speechSynthesis.getVoices())
     this.utterInstances.voice = this.configUtterance.voice;
-    
+
     this.utterInstances.text = message;
     this.utterInstances.volume = this.configUtterance.volume;
     this.utterInstances.rate = this.configUtterance.rate;
     this.utterInstances.pitch = this.configUtterance.pitch;
     this.speechUtteranceChunker(this.utterInstances, { chunkLength: 110 }, () => { this.listenAfterSpeechSubject.next(null) });
+
 
     //return this.speechSynthesis.speak(this.utterInstances);
   }
@@ -375,7 +410,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     // return this.speechSynthesis.speak(this.utterInstances);
   }
 
-  stopSpeech(event){
+  stopSpeech(event) {
     this.speechSynthesis.cancel();
     this.speechQueue.pop();
   }
