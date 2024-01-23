@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, OnInit } from '@angular/co
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { Queue } from './util/queue';
+import { trigger, state, style, animate, transition } from '@angular/animations';
 
 
 declare var $: any;
@@ -13,7 +14,7 @@ interface IWindow extends Window {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit, AfterViewInit {
   title = 'VoiceSecured';
@@ -28,6 +29,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public speechCustom: string;
   public context = '';
   public listenAfterSpeechSwitch = true;
+  public continiouslisteningSwitch = false;
   public redirectSpeechSwitch = false;
   public voices: SpeechSynthesisVoice[] = [];
 
@@ -102,6 +104,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         newUtt.rate = utt.rate;
         newUtt.pitch = utt.pitch;
         newUtt.voice = utt.voice;
+        this.configUtterance.voice = utt.voice;
 
         newUtt.addEventListener('end', function () {
           if (_speechUtteranceChunker.cancel) {
@@ -129,7 +132,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     const { webkitSpeechRecognition }: IWindow = window as unknown as IWindow;
-    //let vulgarities = ["shit", "fuck", "bitch", "damn", "jesus", "christ", "god", "pussy", "dick", "douche", "bastard", "gay", "nigger", "homo"]
     this.speechSynthesis = (window as any).speechSynthesis;
 
     this.speechSynthesis.onvoiceschanged = () => {
@@ -160,17 +162,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         //message = message.toLowerCase()
         this.readOutLoud(message, false);
       }
-      // } else {
-      //   let  now = performance.now();
-      //   if((now - this.timeLastSpoke) > 18500 ){
-      //     //are you there, stay here I love you"
-
-      //     this.generateFillerSpeech(null);
-      //     setTimeout(() => {
-      //       this.timeLastSpoke = performance.now();
-      //     },2000)
-      //   }
-      // }
     }, 500);
 
 
@@ -257,13 +248,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       if (event.error === 'no-speech') {
         this.instructions = 'No speech was detected. Try again.';
         this.recognition.stop();
-        if (!this.listenAfterSpeechSwitch) {
+        if (!this.continiouslisteningSwitch) {
           return;
 
         }
         setTimeout(() => {
           this.recognition.start();
-        }, 500)
+        }, 750)
       }
     };
 
