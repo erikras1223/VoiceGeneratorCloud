@@ -1,0 +1,18 @@
+<div style="display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: row;justify-content: center;">
+        <mat-form-field class="example-form-field" appearance="fill">
+            <mat-label>Username </mat-label>
+            <input matInput type="text" [(ngModel)]="this.username">
+        </mat-form-field>
+        <mat-form-field class="example-form-field" appearance="fill" type="password">
+            <mat-label>Password </mat-label>
+            <input matInput type="text" [(ngModel)]="this.password">
+        </mat-form-field>
+        <button *ngIf="username && password"
+                  (click)="signup($event)">
+                  Sign Up
+        </button>
+    </div>
+    
+</div>
+

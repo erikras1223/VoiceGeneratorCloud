@@ -1,0 +1,19 @@
+<div style="display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: row;justify-content: center;">
+        <mat-form-field class="example-form-field" appearance="fill">
+            <mat-label>Username </mat-label>
+            <input matInput type="text" [(ngModel)]="this.username">
+        </mat-form-field>
+        <mat-form-field class="example-form-field" appearance="fill" type="password">
+            <mat-label>Password </mat-label>
+            <input matInput type="text" [(ngModel)]="this.password">
+        </mat-form-field>
+        <button (click)="login($event)">
+                  Login
+        </button>
+    </div>
+    <div style="display: flex; flex-direction: row;justify-content: center;">
+        <p>Don't have an account? <a [routerLink]="['/register']">Register here</a></p>
+    </div>
+</div>
+

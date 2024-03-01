@@ -1,8 +1,8 @@
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { AfterViewInit, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { Queue } from './util/queue';
-import { trigger, state, style, animate, transition } from '@angular/animations';
+
+import { Queue } from 'src/app/util/queue';
 
 
 declare var $: any;
@@ -11,12 +11,13 @@ interface IWindow extends Window {
   SpeechRecognition: any;
 }
 
+
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class HomeComponent implements OnInit, AfterViewInit {
   title = 'VoiceSecured';
   private recognition: SpeechRecognition;
   public noteTextarea = '';
@@ -66,8 +67,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
 
+
+
   constructor(private cdRef: ChangeDetectorRef,
     private http: HttpClient) {
+
+
+    
     this.speechQueue = new Queue();
     let _speechUtteranceChunker: any = (utt, settings, callback) => {
       settings = settings || {};
@@ -415,3 +421,4 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
 }
+

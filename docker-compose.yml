@@ -3,11 +3,17 @@ version: '3.8'
 services:
   voiceapp:
     build:
-      context: ./backend
+      context: ./backend/voice-app
     ports:
       - "8084:8084"
     environment:
       - api_key=${api_key}
+
+  # verifytoken:
+  #   build:
+  #     context: ./backend/auth
+  #   ports:
+  #     - "8085:8085"
 
   nginx:
     build:

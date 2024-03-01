@@ -1,3 +1,4 @@
 .env
-backend/venv
+backend/auth/venv
+backend/voice-app/venv
 frontend/node_modules
