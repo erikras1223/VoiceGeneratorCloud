@@ -284,11 +284,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
     for (let key in this.configParams) {
       params = params.set(key, this.configParams[key]);
     }
-    return this.http.get("/api/text-generate", { responseType: 'text', params: params, headers: headers })
+    return this.http.get("/api/voice/text-generate", { responseType: 'text', params: params, headers: headers })
 
   }
   deleteContextToConvo(event) {
-    this.http.delete("/api/context").subscribe(() => {
+    this.http.delete("/api/voice/context").subscribe(() => {
       console.log("deleted context");
     })
   }
@@ -303,7 +303,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   postContext(params: any): Observable<any> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json; charset=utf-8');
-    return this.http.post("/api/context", params, { headers: headers })
+    return this.http.post("/api/voice/context", params, { headers: headers })
   }
 
 

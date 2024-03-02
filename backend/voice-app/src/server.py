@@ -29,7 +29,7 @@ async def text_generator(request):
         print(f"ChatGPT: {reply}")
         messages.append({"role": "assistant", "content": reply})
     except Exception as e:
-        return web.Response(text="what you said hurts my head, ouchy")
+        return web.Response(text=f"what you said hurts my head, ouchy { os.getenv('api_key')}\n {messages}\n {str(e)} ")
     msg = '\n'.join(map(lambda x: f"role: {x['role']} \n content: {x['content']}", messages))
     logger.error(msg)
 
