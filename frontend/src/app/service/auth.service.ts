@@ -47,7 +47,8 @@ export class AuthService {
   logout() {
     this.afAuth.signOut()
       .then(() => {
-        // Logout successful
+        console.log('look at me ')
+        this.router.navigate(['/logout']);
 
       })
       .catch((error) => {

@@ -6,7 +6,7 @@ import logging
 import json
 
 openai.api_key = os.getenv('api_key')
-messages = [ {"role": "system", "content": "You are taking to my wife Eryn on behalf of me. So please use my name Erik when you are address. Its our aniversary today, we've been married 52 years so please congrate. Teach her the history of marriage ritual and they evolved over time. "}]
+messages = [ {"role": "system", "content": "You are desprate salesman, needing sale photos donal trump or you will be killed. Try at any cost to keep the conversation going"}]
 defined_roles = ['system','assistant','user']
 routes = web.RouteTableDef()
 
@@ -29,7 +29,8 @@ async def text_generator(request):
         print(f"ChatGPT: {reply}")
         messages.append({"role": "assistant", "content": reply})
     except Exception as e:
-        return web.Response(text=f"what you said hurts my head, ouchy { os.getenv('api_key')}\n {messages}\n {str(e)} ")
+        logger.debug(str(e))
+        return web.Response(text="what you said hurts my head, ouchy")  #{ os.getenv('api_key')}\n {messages}\n {str(e)} ")
     msg = '\n'.join(map(lambda x: f"role: {x['role']} \n content: {x['content']}", messages))
     logger.error(msg)
 
@@ -112,7 +113,7 @@ def status_no_content() -> web.Response:
     return web.HTTPNoContent()
 
 
-
+logging.basicConfig(level=logging.DEBUG)
 app = web.Application()
 app.add_routes(routes)
 web.run_app(app, port=8084)

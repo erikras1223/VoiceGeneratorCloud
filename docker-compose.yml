@@ -9,11 +9,15 @@ services:
     environment:
       - api_key=${api_key}
 
-  # verifytoken:
-  #   build:
-  #     context: ./backend/auth
-  #   ports:
-  #     - "8085:8085"
+  verifytoken:
+    build:
+      context: ./backend/auth
+    ports:
+      - "8085:8085"
+    environment:
+      - auth_key_path=${auth_key_path}
+    volumes:
+      - '${auth_key_path}:/app/service-account.json'
 
   nginx:
     build:

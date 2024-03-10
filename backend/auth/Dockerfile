@@ -45,6 +45,12 @@ WORKDIR /app
 # # COPY view.py .
 # # COPY api.py .
 
+# Set the environment variable PYTHONUNBUFFERED to prevent Python from buffering stdout and stderr
+ENV PYTHONUNBUFFERED=1
+
+# Set the logging level to DEBUG
+ENV LOG_LEVEL=DEBUG
+
 # # Expose port 8080 for the container
 EXPOSE 8085
 

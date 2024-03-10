@@ -1,5 +1,6 @@
 .env
 .history/
 backend/auth/venv
+*.json
 backend/voice-app/venv
 frontend/node_modules

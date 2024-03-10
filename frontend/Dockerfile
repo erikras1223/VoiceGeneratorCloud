@@ -17,12 +17,12 @@ RUN npm run build-prod
 
 FROM debian:buster
 
-
 ARG BUILD_NGINX_VERSION=1.23.4
 ARG INSTALL_AT=/opt/nginx
 
 ENV NGINX_VERSION=$BUILD_NGINX_VERSION
 ENV INSTALL_LOCATION=$INSTALL_AT
+
 
 RUN set -x \
     && apt-get update \
@@ -42,6 +42,8 @@ RUN set -x \
     && tar -xzf nginx-${NGINX_VERSION}.tar.gz \
     && ln -sf nginx-${NGINX_VERSION} nginx \
     && git clone https://github.com/perusio/nginx-auth-request-module.git
+
+RUN apt-get update && apt-get install -y openssl
 
 # Build
 WORKDIR /src/nginx
@@ -75,10 +77,32 @@ RUN set -x && useradd -r nginx
 RUN ln -sf /dev/stdout ${INSTALL_LOCATION}/logs/access.log \
     && ln -sf /dev/stderr ${INSTALL_LOCATION}/logs/error.log
 
+
+
 # Start nginx
 EXPOSE 8080
 STOPSIGNAL SIGTERM
+
 WORKDIR ${INSTALL_LOCATION}
+
+RUN mkdir ./ssl
+COPY ./nginx/ssl/sslcert.conf ./ssl/
+#Generate SSL certificate
+RUN openssl req \
+        -x509 \
+        -sha256 \
+        -nodes \
+        -days 365 \
+        -config ./ssl/sslcert.conf \
+        -newkey rsa:2048 \
+        -keyout ./ssl/server.key \
+        -out ./ssl/server.crt 
+
+# Remove SSL configuration file after certificate generation
+#RUN rm ./ssl/sslcert.conf
+RUN ls 
+
+
 CMD ["./sbin/nginx", "-g", "daemon off;"]
 
 
