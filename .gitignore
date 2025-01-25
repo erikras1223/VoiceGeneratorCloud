@@ -1,6 +1,8 @@
 .env
 .history/
+.vscode/
 backend/auth/venv
 *.json
 backend/voice-app/venv
+backend/discover-audio/venv
 frontend/node_modules

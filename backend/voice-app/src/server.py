@@ -1,5 +1,6 @@
 from typing import Union
 from aiohttp import web, hdrs
+import jwt
 import openai
 import os
 import logging
@@ -23,7 +24,7 @@ async def text_generator(request):
         )
     try:
         chat = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo", messages=messages
+                model="gpt-4o-mini", messages=messages
             )
         reply = chat.choices[0].message.content
         print(f"ChatGPT: {reply}")
@@ -67,6 +68,17 @@ async def update_context(request):
 
 @routes.delete('/voice/context')
 async def delete_context(request):
+    logger = logging.getLogger(__name__)
+    headers = request.headers
+    for header, value in headers.items():
+        logger.debug(f"{header}: {value}")
+
+    #token = auth_header[len('Bearer '):]
+    #logger.debug(f"about to verify token {token}")
+    #decoded_token = jwt.decode(token, options={'verify_signature': False})  # Set verify to True if you want to verify the signature
+    # Extract the email claim from the decoded token
+    #email = decoded_token.get('email')
+    #logger.debug(f"The user's email \n {str(email)}")
     messages.clear()
     return status_no_content()
 

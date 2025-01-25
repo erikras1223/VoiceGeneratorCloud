@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './component/app.component';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import {MatSelectModule} from '@angular/material/select';
 import {MatInputModule} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
@@ -17,6 +17,7 @@ import { ClipboardModule } from 'ngx-clipboard';
 import { LoginComponent } from './component/login/login.component';
 import { HomeComponent } from './component/home/home.component';
 import { RegisterComponent } from './component/register/register.component';
+import { TokenInterceptor } from './service/interceptor/token-interceptor.service';
 // import { TextGenModule } from './text-gen/text-gen.module';
 
 
@@ -41,7 +42,9 @@ import { RegisterComponent } from './component/register/register.component';
     BrowserAnimationsModule,
     ClipboardModule,
   ],
-  providers: [],
+  providers:  [ 
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

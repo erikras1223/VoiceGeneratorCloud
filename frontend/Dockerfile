@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY ./ ./
-RUN npm run build-prod
+RUN npm run build
 
 # # Stage 2: Serve the frontend files using nginx
 # FROM nginx:alpine
@@ -33,6 +33,8 @@ RUN set -x \
         libpcre3-dev \
         zlib1g-dev \
         ca-certificates \
+        openssl \
+        libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Download, untar and symlink
@@ -43,7 +45,7 @@ RUN set -x \
     && ln -sf nginx-${NGINX_VERSION} nginx \
     && git clone https://github.com/perusio/nginx-auth-request-module.git
 
-RUN apt-get update && apt-get install -y openssl
+#RUN apt-get update && apt-get install -y openssl
 
 # Build
 WORKDIR /src/nginx
@@ -59,8 +61,8 @@ RUN set -x \
     --without-http_scgi_module \
     --without-http_uwsgi_module \
     --without-http_fastcgi_module \
-    --with-debug 
-    
+    --with-debug \
+    --with-http_ssl_module 
 
 COPY --from=build-stage /app/dist/VoiceGeneratorCloud/ /opt/nginx/html
 COPY ./nginx/nginx.conf  /opt/nginx/conf/nginx.conf
@@ -80,7 +82,7 @@ RUN ln -sf /dev/stdout ${INSTALL_LOCATION}/logs/access.log \
 
 
 # Start nginx
-EXPOSE 8080
+EXPOSE 8443
 STOPSIGNAL SIGTERM
 
 WORKDIR ${INSTALL_LOCATION}

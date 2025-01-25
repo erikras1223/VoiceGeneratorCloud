@@ -14,17 +14,88 @@ services:
       context: ./backend/auth
     ports:
       - "8085:8085"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     environment:
       - auth_key_path=${auth_key_path}
     volumes:
       - '${auth_key_path}:/app/service-account.json'
+    
+  
 
   nginx:
     build:
       context: ./frontend
     ports:
-      - "8081:8080"
+      - "443:8443"
     depends_on:
       - voiceapp
+
+  # plexmedia:
+  #   image: plexinc/pms-docker
+  #   restart: unless-stopped
+  #   container_name: plexms
+  #   ports:
+  #     - "32400:32400/tcp"
+  #     - "3005:3005/tcp"
+  #     - "8324:8324/tcp"
+  #     - "32469:32469/tcp"
+  #     - "1900:1900/udp"
+  #     - "32410:32410/udp"
+  #     - "32412:32412/udp"
+  #     - "32413:32413/udp"
+  #     - "32414:32414/udp"
+
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=Europe/London
+  #     - PLEX_CLAIM=${PLEX_CLAIM}
+  #     - HOSTNAME="localhost"
+  #     - PLEXAPI_AUTH_SERVER_BASEURL=${PLEXAPI_AUTH_SERVER_BASEURL}
+  #     - PLEXAPI_AUTH_SERVER_TOKEN=${PLEXAPI_AUTH_SERVER_TOKEN}
+  #     - PLEXAPI_AUTH_MYPLEX_USERNAME=${PLEXAPI_AUTH_MYPLEX_USERNAME}
+  #     - PLEXAPI_AUTH_MYPLEX_PASSWORD=${PLEXAPI_AUTH_MYPLEX_PASSWORD}
+  #     - PLEXAPI_LOG_PATH=${PLEXAPI_LOG_PATH}
+
+  #   volumes:
+  #     - /home/docker/plexms/config:/config
+  #     - /home/media/docker/plexms/transcodes:/transcode
+  #     - /home/media/docker/plexms/media:/media
+
+
+  # plex:
+  #   image: lscr.io/linuxserver/plex:latest
+  #   container_name: plex
+  #   network_mode: host
+  #   ports:
+  #     - "32400:32400" # (for access to the Plex Media Server) [required]
+  #     - "3005:3005" # (for controlling Plex Home Theater via Plex Companion)
+  #     - "8324:8324" # (for controlling Plex for Roku via Plex Companion)
+  #     - "32410:32410/udp" # (for current GDM network discovery)
+  #     - "32412:32412/udp" # (for current GDM network discovery)
+  #     - "32413:32413/udp" # (for current GDM network discovery)
+  #     - "32414:32414/udp" # (for current GDM network discovery)
+  #     - "32469:32469" # (for access to the Plex DLNA Server)
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - VERSION=docker
+  #   devices:
+  #     - /dev/dri:/dev/dri
+  #   volumes:
+  #     - /home/telos/docker/plex/config:/config
+  #     - /media/nas_media:/media:ro
+  #     - /media/nas_music:/music:ro
+  #     - /media/plex_optimized:/transcode
+  #   restart: unless-stopped
+  # discoveraudio:
+  #   build:
+  #     context: ./backend/discover-audio
+  #   ports:
+  #     - "8086:8086"
+  #   environment:
+  #     - auth_key_path=${auth_key_path}
 
 

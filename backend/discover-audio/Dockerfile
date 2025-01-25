@@ -1,22 +1,3 @@
-# # Base image with Node.js and NPM for building the Angular app
-# FROM node:12-alpine AS build
-
-# # Set the working directory to /app
-# WORKDIR /app
-
-
-
-# # Copy the rest of the application code to the working directory
-# COPY . .
-
-# WORKDIR /app/frontend
-
-
-# # Install the dependencies
-# RUN npm install
-
-# # Build the Angular app in production mode
-# RUN npm run build-prod
 
 
 # Use official Python runtime as a parent image
@@ -24,6 +5,8 @@ FROM python:3.10-slim-buster
 
 # Set the working directory in the container to /app
 WORKDIR /app
+
+
 
 # Copy the requirements.txt file to the container's /app directory
 COPY . .
@@ -42,17 +25,19 @@ WORKDIR /app
 
 # # Copy the aiohttp server files to the container's /app directory
 # COPY backend/* .
-# # COPY view.py .
-# # COPY api.py .
-
+# COPY view.py .
+# COPY api.py .
+# RUN python -m pip install --upgrade debugpy
 # Set the environment variable PYTHONUNBUFFERED to prevent Python from buffering stdout and stderr
 ENV PYTHONUNBUFFERED=1
 
 # Set the logging level to DEBUG
-ENV LOG_LEVEL=INFO
+ENV LOG_LEVEL=DEBUG
 
 # # Expose port 8080 for the container
-EXPOSE 8085
+EXPOSE 8086
+
+
 
 # # Start the aiohttp server when the container starts
 CMD ["python", "./src/server.py"]
